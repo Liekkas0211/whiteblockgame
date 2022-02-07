@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<style>
+*{
+    margin: 0;
+    padding: 0;
+}
+.box{
+    margin: 50px auto 0 auto;
+    width: 400px;
+    height: auto;
+    border: solid 1px #222;
+
+}
+
+#cont{
+    width: 400px;
+    height: 600px;
+    position: relative;
+    overflow: hidden; 
+    /* 内容溢出隐藏 */
+}
+#go{
+    width: 100%;
+    height: 600px;
+    position: absolute;
+    top: 0;
+    font:  700 60px '微软雅黑';
+    text-align: center;
+    z-index: 99; /* 堆叠处于最上面*/
+}
+#go div{
+    cursor: pointer;
+    background-color: rgb(126, 241, 116);
+    border-bottom: solid 1px #222;
+
+}
+#main{
+    width: 400px;
+    height: 600px;
+    position: relative;
+    top: -150px
+}
+.row{
+    width:  400px;
+    height: 150px;
+
+}
+.row div{
+    width: 99px;
+    height: 149px;
+    border:  solid 1px #222;
+    float: left;
+    border-top-width: 0;
+    border-left-width: 0;
+    cursor: pointer;
+}
+#count{
+    border-top: solid 1px #222;
+    width: 400px;
+    height: 50px;
+    font:700 36px/50px '微软雅黑';
+    text-align: center;
+    background-color: gold;
+    
+}
+</style>
+<body>
+<div class="box">
+    <div id="cont">
+        <!-- 内容区 -->
+        <div id="go">
+            <div>
+                点击开始
+            </div>
+        </div>
+        <div id="main">
+
+        </div>
+    </div>
+    <div id="count"> 
+        <!-- 计数区 -->
+
+    </div>
+</div>
+</body>
+
+<script>
+    window.onload=function(){
+        var main=document.getElementById('main');
+        var go=document.getElementById('go');
+        var count=document.getElementById('count');
+        colors=['#1AAB8A','#E15650', '#121B39', '#80A84E'];
+        //动态创建div
+        function CDiv(classname){
+            var Div=document.createElement('div');
+            index = Math.floor(Math.random()*4);//floor 四舍五入
+            Div.className=classname;//为他设置class
+            //在一行里添加四个div，也就是四个方块
+            for(let i=0;i<4;i++){
+                var iDiv=document.createElement('div')
+                Div.appendChild(iDiv);
+                //appendChild() 方法可向节点的子节点列表的末尾添加新的子节点。
+            }
+
+            if(main.children.length==0){
+                main.appendChild(Div);//没有就添加
+            }else{
+                main.insertBefore(Div,main.children[0]);
+                //如果有元素，则在该元素之前插入Div
+            }
+            //随即设置颜色
+            Div.children[index].style.backgroundColor = colors[index];
+            Div.children[index].className='i';
+            //彩色方块的样式类设为i，方便区分
+        }
+            //Div则表示游戏中的行，
+            //添加的iDiv则表示一行中的四个方块。
+            //最后通过产生随机数，给一行中的方块随机添加背景颜色并添加class为"i"。
+            function move(obj){
+                var speed=5;
+                var num=0;
+                obj.timer=setInterval(function(){
+                    var step = parseInt(getComputedStyle(obj, null)['top']) + speed;
+
+                    obj.style.top=step+'px';
+                    if(parseInt(getComputedStyle(obj,null)['top'])>=0){
+                        CDiv('row');
+                        obj.style.top=-150+'px';
+                    }
+                    if(obj.children.length==6){
+                        for(var i=0;i<4;i++){
+                            //判断最后一行的四个方块是否有彩色的
+                            if(obj.lastChild.children[i].className == 'i'){ 
+                                //没有点击，游戏结束
+                            obj.style.top = '-150px';
+                            count.innerHTML = '游戏结束,最高得分: ' + num;
+                        //关闭定时器
+                            clearInterval(obj.timer);
+                        //显示开始游戏
+                            go.children[0].innerHTML = '游戏结束';
+                            alert('游戏结束! '+'得分是：'+ num+'\n再来一次吧！');
+                            go.style.display = "block";
+
+                            }
+                        }
+                    obj.removeChild(obj.lastChild);
+                    }
+
+                    obj.onmousedown=function(event){
+                        event=event||window.event;
+                        var target = event.target; //点击的元素标签
+                        if(target.className=='i'){
+                            target.style.backgroundColor = "#bbb";
+                    //清除盒子标记
+                            target.className = '';
+                    //计分
+                            num++;
+                    //显示得分
+                            count.innerHTML = '当前得分: ' + num;
+                        }else{ 
+                            //没有点到彩色方块，classname不等于i 游戏结束
+                            obj.style.top = 0;
+                            count.innerHTML = '游戏结束,最高得分: ' + num;
+                            alert('游戏结束! '+'得分是：'+ num+'\n再来一次吧！');
+                    //关闭定时器
+                            clearInterval(obj.timer);
+                    //显示开始游戏
+                            go.children[0].innerHTML = '游戏结束';
+                            go.style.display = "block";
+                        }
+
+                        if(num%7==0){
+                            speed++;
+                        }
+                    }
+                    obj.onmouseup = function (event) {}
+
+
+                    },20)
+
+            }
+            go.children[0].onclick = function(){
+                if (main.children.length) {
+            //暴力清除main里面所有盒子
+                        main.innerHTML = '';
+                }
+        //清空计分
+                    count.innerHTML = '游戏开始';
+        //隐藏开始盒子
+                    this.parentNode.style.display = "none";
+                    move(main);
+    }
+}
+
+
+
+
+        
+    
+
+</script>
